@@ -5,7 +5,7 @@ use crate::utils::{arg_parser, cmd_executor, file_parser};
 use crossterm::{
     event::{self, DisableMouseCapture, EnableMouseCapture, Event, KeyCode},
     execute,
-    terminal::{disable_raw_mode, enable_raw_mode, EnterAlternateScreen, LeaveAlternateScreen}, cursor::CursorShape,
+    terminal::{disable_raw_mode, enable_raw_mode, EnterAlternateScreen, LeaveAlternateScreen},
 };
 use std::{error::Error, io};
 use tui::{
@@ -15,17 +15,12 @@ use tui::{
     widgets::{Block, Borders, Cell, Row, Table, TableState},
     Frame, Terminal,
 };
-    //TODO: Ui:
-    //https://github.com/fdehau/tui-rs/blob/master/examples/user_input.rs
-    // then extract UI logic into its own module /file 
+//TODO: Ui:
+//https://github.com/fdehau/tui-rs/blob/master/examples/user_input.rs
+// then extract UI logic into its own module /file
 fn main() -> Result<(), Box<dyn Error>> {
     arg_parser::parse_args();
     let _res = file_parser::parse_files();
-
-    //GOTO file at specific line
-    let _res = cmd_executor::exec_external_cmd();
-
-
 
     // setup terminal
     enable_raw_mode()?;
@@ -39,7 +34,11 @@ fn main() -> Result<(), Box<dyn Error>> {
         vec!["Row11", "Row12", "Row13"],
         vec!["Row21", "Row22", "Row23"],
         vec!["Row31", "Row32", "Row33"],
-        vec!["Row41", "Row42", "Row43"],
+        vec![
+            "D:\\Me\\Git\\grepper\\TODOOOOOOOOO.txt:26:0",
+            "Row42",
+            "Row43",
+        ],
         vec!["Row51", "Row52", "Row53"],
         vec!["Row61", "Row62\nTest", "Row63"],
         vec!["Row71", "Row72", "Row73"],
@@ -74,7 +73,6 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     Ok(())
 }
-
 
 struct App<'a> {
     state: TableState,
@@ -116,14 +114,16 @@ impl<'a> App<'a> {
         self.state.select(Some(i));
     }
 
+    ///GOTO file at specific line in Vs code
     pub fn open_file_location(&mut self) {
         let current = self.state.selected();
-        if let Some(idx) = current{
+        if let Some(idx) = current {
             let wut = self.items.get(idx);
-            
-            if let Some(path) = wut{
+
+            if let Some(path) = wut {
                 let abs_file_path = path[0];
                 println!("Current <FILE_PATH> is: {}", abs_file_path);
+                let _res = cmd_executor::exec_external_cmd(abs_file_path);
             }
             println!("CURRENT INTEX >> [{}]", idx);
         }

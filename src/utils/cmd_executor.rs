@@ -10,12 +10,12 @@ use std::process::Command;
 ///Executes external processes from current program
 ///
 ///See: https://stackoverflow.com/questions/62273768/couldnt-convert-the-error-to-stdioerror#:~:text=update%3A%20it%20was%20pointed%20out
-pub fn exec_external_cmd() -> Result<(), Box<dyn std::error::Error>> {
+pub fn exec_external_cmd(path: &str) -> Result<(), Box<dyn std::error::Error>> {
+    let cmd = format!("code --goto {path}");
     let output = if cfg!(target_os = "windows") {
         Command::new("cmd")
             .args([
-                "/C",
-                "code --goto D:\\Me\\Git\\grepper\\TODOOOOOOOOO.txt:26:0", //open file on a specific FILE_PATH:Line:Character
+                "/C", &cmd, //open file on a specific FILE_PATH:Line:Character
             ])
             .output()
             .expect("failed to execute process")
