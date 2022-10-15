@@ -35,9 +35,9 @@ fn main() -> Result<(), Box<dyn Error>> {
         vec!["Row21", "Row22", "Row23"],
         vec!["Row31", "Row32", "Row33"],
         vec![
-            "D:\\Me\\Git\\grepper\\TODOOOOOOOOO.txt:26:0",
-            "Row42",
-            "Row43",
+            "D:\\Me\\Git\\grepper\\TODOOOOOOOOO.txt",
+            "26",
+            "0",
         ],
         vec!["Row51", "Row52", "Row53"],
         vec!["Row61", "Row62\nTest", "Row63"],
@@ -116,16 +116,20 @@ impl<'a> App<'a> {
 
     ///GOTO file at specific line in Vs code
     pub fn open_file_location(&mut self) {
-        let current = self.state.selected();
-        if let Some(idx) = current {
-            let wut = self.items.get(idx);
+        let current_row = self.state.selected();
+        if let Some(row_idx) = current_row {
+            let row_data = self.items.get(row_idx);
 
-            if let Some(path) = wut {
-                let abs_file_path = path[0];
+            if let Some(data) = row_data {
+                let abs_file_path = data[0];
+                let line = data[1];
+                let at_char = data[2];
+                
                 println!("Current <FILE_PATH> is: {}", abs_file_path);
-                let _res = cmd_executor::exec_external_cmd(abs_file_path);
+                let path =format!("{abs_file_path}:{line}:{at_char}");
+                let _res = cmd_executor::exec_external_cmd(&path);
             }
-            println!("CURRENT INTEX >> [{}]", idx);
+            println!("CURRENT INTEX >> [{}]", row_idx);
         }
     }
 }
