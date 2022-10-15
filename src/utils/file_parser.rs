@@ -5,7 +5,7 @@ use std::io::{self, prelude::*, BufReader};
 pub fn parse_files() -> io::Result<()> {
     let keyword: &str = "GQL.Candidate";
     let file = File::open("D:\\Me\\Git\\grepper\\TODOOOOOOOOO.txt")?;
-    
+
     let reader = BufReader::new(file);
     let mut line_number = 0;
 
