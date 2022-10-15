@@ -1,0 +1,28 @@
+TODO : 
+	HIGH LEVEL OVERVIEW  ON WHOLE RESOLVER / CONTROLLER PAIR AND HOW WE CALL IT TO FIGURE OUT HOW TO REFACTOR !!!!!!
+
+
+1
+Reuse same :
+	C:\Projects\Erecruit\Erecruit\Git\erecruit.GQL.Candidate\Types\RateGroup\CandidateRateGroup\CandidateRateGroupField.cs
+	For match mapping model.
+2
+	Rewrite resolver into generic one :
+	almost the same like :
+	C:\Projects\Erecruit\Erecruit\Git\erecruit.BatchApi.Resolvers\Resources\AboutTypeFacilityDepartment\AboutTypeFacilityDepartmentResolver.cs
+3 annannas
+
+GQL.Candidate
+
+
+GQL.Candidate
+
+
+GQL.Candidate
+
+GQL.Candidate
+
+
+GQL.Candidate
+GQL.Candidate
+GQL.CandidateGQL.Candidate
