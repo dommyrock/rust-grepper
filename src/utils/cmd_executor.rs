@@ -27,6 +27,12 @@ pub fn exec_external_cmd() -> Result<(), Box<dyn std::error::Error>> {
         // ])
         // .output()
         // .expect("failed to execute process")
+
+        /*Also see:
+            https://rust-lang-nursery.github.io/rust-cookbook/os/external.html#run-piped-external-commands
+            https://stackoverflow.com/questions/7669963/how-can-i-get-a-side-by-side-diff-when-i-do-git-diff
+            TLDR usefull command--> "git diff --word-diff=color"
+        */
     } else {
         Command::new("sh")
             .arg("-c")
