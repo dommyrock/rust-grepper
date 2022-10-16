@@ -12,21 +12,12 @@ use tui::{
     backend::{Backend, CrosstermBackend},
     layout::{Constraint, Direction, Layout},
     style::{Color, Modifier, Style},
+    text::{Span, Spans, Text},
     widgets::{Block, Borders, Cell, Paragraph, Row, Table, TableState},
     Frame, Terminal,
 };
-/*TODO: Ui:
-        Conclustion :
-            1 see user_input sample ( let (msg, style) = match app.input_mode line 130)
-            2 idea is to also have "InputMode" and based on matched enum we re-draw & focus on INPUT OR RESULTS (on tab press)
+use unicode_width::UnicodeWidthStr;
 
-        2 as tabs re-render different blocks (line ) on tab switch i can rerender table on search keyword re-enter [only neeed to figure out how to re focus table block after search]
-        https://github.com/fdehau/tui-rs/blob/master/examples/tabs.rs
-        https://github.com/fdehau/tui-rs/blob/master/examples/user_input.rs (explore App =>   input_mode: InputMode , maybe i could make mine to swtch widget instead)
-
-        split widget code example:
-        https://github.com/rhysd/tui-textarea#split
-*/
 fn main() -> Result<(), Box<dyn Error>> {
     arg_parser::parse_args();
     let _res = file_parser::parse_files();
@@ -96,7 +87,7 @@ impl<'a> App<'a> {
         App {
             state: TableState::default(),
             items: itms,
-            input: "ok".to_string(),
+            input: String::new(),
             input_mode: InputMode::Normal,
         }
     }
@@ -153,12 +144,30 @@ fn run_app<B: Backend>(terminal: &mut Terminal<B>, mut app: App) -> io::Result<(
         terminal.draw(|f| ui(f, &mut app))?;
 
         if let Event::Key(key) = event::read()? {
-            match key.code {
-                KeyCode::Char('q') => return Ok(()),
-                KeyCode::Enter => app.open_file_location(), //Tab will be used to hop from input to table
-                KeyCode::Down => app.next(),
-                KeyCode::Up => app.previous(),
-                _ => {}
+            match app.input_mode {
+                InputMode::Normal => match key.code {
+                    KeyCode::Tab => app.input_mode = InputMode::Editing,
+                    KeyCode::Enter => app.open_file_location(),
+                    KeyCode::Down => app.next(),
+                    KeyCode::Up => app.previous(),
+                    KeyCode::Char('q') => return Ok(()),
+                    _ => {}
+                },
+                InputMode::Editing => match key.code {
+                    // KeyCode::Enter => {
+                    //     app.messages.push(app.input.drain(..).collect()); [might insert into results like this]
+                    // }
+                    KeyCode::Char(c) => {
+                        app.input.push(c);
+                    }
+                    KeyCode::Backspace => {
+                        app.input.pop();
+                    }
+                    KeyCode::Tab => {
+                        app.input_mode = InputMode::Normal;
+                    }
+                    _ => {}
+                },
             }
         }
     }
@@ -179,6 +188,33 @@ fn ui<B: Backend>(f: &mut Frame<B>, app: &mut App) {
         .split(f.size());
 
     //---------------------------INPUT------------------------
+    let (msg, style) = match app.input_mode {
+        InputMode::Normal => (
+            vec![
+                Span::raw("Press "),
+                Span::styled("q", Style::default().add_modifier(Modifier::BOLD)),
+                Span::raw(" to exit, "),
+                Span::styled("Tab", Style::default().add_modifier(Modifier::BOLD)),
+                Span::raw(" to start new search."),
+            ],
+            Style::default().add_modifier(Modifier::RAPID_BLINK),
+        ),
+        InputMode::Editing => (
+            vec![
+                Span::raw("Press "),
+                Span::styled("Tab", Style::default().add_modifier(Modifier::BOLD)),
+                Span::raw(" to switch to results, "),
+                Span::styled("Enter", Style::default().add_modifier(Modifier::BOLD)),
+                Span::raw(" to go to definition"),
+            ],
+            Style::default(),
+        ),
+    };
+    let mut text = Text::from(Spans::from(msg));
+    text.patch_style(style);
+    let help_message = Paragraph::new(text);
+    f.render_widget(help_message, chunks[0]);
+
     let input = Paragraph::new(app.input.as_ref())
         .style(match app.input_mode {
             InputMode::Normal => Style::default(),
@@ -186,6 +222,22 @@ fn ui<B: Backend>(f: &mut Frame<B>, app: &mut App) {
         })
         .block(Block::default().borders(Borders::ALL).title("Input"));
     f.render_widget(input, chunks[1]);
+
+    match app.input_mode {
+        InputMode::Normal =>
+            // Hide the cursor. `Frame` does this by default, so we don't need to do anything here
+            {}
+
+        InputMode::Editing => {
+            // Make the cursor visible and ask tui-rs to put it at the specified coordinates after rendering
+            f.set_cursor(
+                // Put cursor past the end of the input text
+                chunks[1].x + app.input.width() as u16 + 1,
+                // Move one line down, from the border to the input line
+                chunks[1].y + 1,
+            )
+        }
+    }
     //---------------------------INPUT------------------------
     let selected_style = Style::default().add_modifier(Modifier::REVERSED);
     let normal_style = Style::default().bg(Color::Blue);
