@@ -10,14 +10,23 @@ use crossterm::{
 use std::{error::Error, io};
 use tui::{
     backend::{Backend, CrosstermBackend},
-    layout::{Constraint, Layout},
+    layout::{Constraint, Direction, Layout},
     style::{Color, Modifier, Style},
-    widgets::{Block, Borders, Cell, Row, Table, TableState},
+    widgets::{Block, Borders, Cell, Paragraph, Row, Table, TableState},
     Frame, Terminal,
 };
-//TODO: Ui:
-//https://github.com/fdehau/tui-rs/blob/master/examples/user_input.rs
-// then extract UI logic into its own module /file
+/*TODO: Ui:
+        Conclustion :
+            1 see user_input sample ( let (msg, style) = match app.input_mode line 130)
+            2 idea is to also have "InputMode" and based on matched enum we re-draw & focus on INPUT OR RESULTS (on tab press)
+
+        2 as tabs re-render different blocks (line ) on tab switch i can rerender table on search keyword re-enter [only neeed to figure out how to re focus table block after search]
+        https://github.com/fdehau/tui-rs/blob/master/examples/tabs.rs
+        https://github.com/fdehau/tui-rs/blob/master/examples/user_input.rs (explore App =>   input_mode: InputMode , maybe i could make mine to swtch widget instead)
+
+        split widget code example:
+        https://github.com/rhysd/tui-textarea#split
+*/
 fn main() -> Result<(), Box<dyn Error>> {
     arg_parser::parse_args();
     let _res = file_parser::parse_files();
@@ -34,11 +43,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         vec!["Row11", "Row12", "Row13"],
         vec!["Row21", "Row22", "Row23"],
         vec!["Row31", "Row32", "Row33"],
-        vec![
-            "D:\\Me\\Git\\grepper\\TODOOOOOOOOO.txt",
-            "26",
-            "0",
-        ],
+        vec!["D:\\Me\\Git\\grepper\\TODOOOOOOOOO.txt", "26", "0"],
         vec!["Row51", "Row52", "Row53"],
         vec!["Row61", "Row62\nTest", "Row63"],
         vec!["Row71", "Row72", "Row73"],
@@ -74,9 +79,16 @@ fn main() -> Result<(), Box<dyn Error>> {
     Ok(())
 }
 
+enum InputMode {
+    Normal,
+    Editing,
+}
+
 struct App<'a> {
     state: TableState,
     items: Vec<Vec<&'a str>>,
+    input_mode: InputMode,
+    input: String,
 }
 
 impl<'a> App<'a> {
@@ -84,6 +96,8 @@ impl<'a> App<'a> {
         App {
             state: TableState::default(),
             items: itms,
+            input: "ok".to_string(),
+            input_mode: InputMode::Normal,
         }
     }
     pub fn next(&mut self) {
@@ -124,9 +138,9 @@ impl<'a> App<'a> {
                 let abs_file_path = data[0];
                 let line = data[1];
                 let at_char = data[2];
-                
+
                 println!("Current <FILE_PATH> is: {}", abs_file_path);
-                let path =format!("{abs_file_path}:{line}:{at_char}");
+                let path = format!("{abs_file_path}:{line}:{at_char}");
                 let _res = cmd_executor::exec_external_cmd(&path);
             }
             println!("CURRENT INTEX >> [{}]", row_idx);
@@ -141,7 +155,7 @@ fn run_app<B: Backend>(terminal: &mut Terminal<B>, mut app: App) -> io::Result<(
         if let Event::Key(key) = event::read()? {
             match key.code {
                 KeyCode::Char('q') => return Ok(()),
-                KeyCode::Tab => app.open_file_location(),
+                KeyCode::Enter => app.open_file_location(), //Tab will be used to hop from input to table
                 KeyCode::Down => app.next(),
                 KeyCode::Up => app.previous(),
                 _ => {}
@@ -151,11 +165,28 @@ fn run_app<B: Backend>(terminal: &mut Terminal<B>, mut app: App) -> io::Result<(
 }
 
 fn ui<B: Backend>(f: &mut Frame<B>, app: &mut App) {
-    let rects = Layout::default()
-        .constraints([Constraint::Percentage(100)].as_ref())
-        .margin(5)
+    let chunks = Layout::default()
+        .direction(Direction::Vertical)
+        .margin(2)
+        .constraints(
+            [
+                Constraint::Length(1),
+                Constraint::Length(3),
+                Constraint::Min(1),
+            ]
+            .as_ref(),
+        )
         .split(f.size());
 
+    //---------------------------INPUT------------------------
+    let input = Paragraph::new(app.input.as_ref())
+        .style(match app.input_mode {
+            InputMode::Normal => Style::default(),
+            InputMode::Editing => Style::default().fg(Color::Yellow),
+        })
+        .block(Block::default().borders(Borders::ALL).title("Input"));
+    f.render_widget(input, chunks[1]);
+    //---------------------------INPUT------------------------
     let selected_style = Style::default().add_modifier(Modifier::REVERSED);
     let normal_style = Style::default().bg(Color::Blue);
     let header_cells = ["Path", "line", "char"]
@@ -185,9 +216,9 @@ fn ui<B: Backend>(f: &mut Frame<B>, app: &mut App) {
         .highlight_style(selected_style.fg(Color::LightGreen))
         .highlight_symbol(">> ")
         .widths(&[
-            Constraint::Percentage(85),
+            Constraint::Percentage(80),
             Constraint::Length(10),
             Constraint::Min(5),
         ]);
-    f.render_stateful_widget(t, rects[0], &mut app.state);
+    f.render_stateful_widget(t, chunks[2], &mut app.state);
 }
