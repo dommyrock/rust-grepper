@@ -19,7 +19,7 @@ impl<'a> App<'a> {
             state: TableState::default(),
             items: itms,
             search: String::new(),
-            view: WidgetMode::SearchResults,
+            view: WidgetMode::Search,
         }
     }
     pub fn next(&mut self) {
@@ -61,11 +61,9 @@ impl<'a> App<'a> {
                 let line = data[1];
                 let at_char = data[2];
 
-                println!("Current <FILE_PATH> is: {}", abs_file_path);
                 let path = format!("{abs_file_path}:{line}:{at_char}");
                 let _res = cmd_executor::exec_external_cmd(&path);
             }
-            println!("CURRENT INTEX >> [{}]", row_idx);
         }
     }
 }
