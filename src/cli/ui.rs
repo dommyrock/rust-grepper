@@ -90,7 +90,7 @@ pub fn ui<B: Backend>(f: &mut Frame<B>, app: &mut App) {
            .max()
            .unwrap_or(0)
            + 1;
-       let cells = item.iter().map(|c| Cell::from(*c));
+       let cells = item.iter().map(|c| Cell::from(c.clone()));
        Row::new(cells).height(height as u16).bottom_margin(1)
    });
    let t = Table::new(rows)

@@ -1,5 +1,5 @@
+use crate::utils::cmd_executor;
 use tui::widgets::TableState;
-use crate::utils::{cmd_executor};
 
 pub enum WidgetMode {
     SearchResults,
@@ -8,18 +8,20 @@ pub enum WidgetMode {
 
 pub struct App<'a> {
     pub state: TableState,
-    pub items: Vec<Vec<&'a str>>,
+    pub items: Vec<Vec<String>>,
     pub view: WidgetMode,
     pub search: String,
+    pub not_used: Vec<Vec<&'a String>>,//to ssatisfy cotract
 }
 
 impl<'a> App<'a> {
-    pub fn new(itms: Vec<Vec<&'a str>>) -> App<'a> {
+    pub fn new(itms: Vec<Vec<String>>) -> App<'a> {
         App {
             state: TableState::default(),
             items: itms,
             search: String::new(),
             view: WidgetMode::Search,
+            not_used: vec![],
         }
     }
     pub fn next(&mut self) {
@@ -57,12 +59,10 @@ impl<'a> App<'a> {
             let row_data = self.items.get(row_idx);
 
             if let Some(data) = row_data {
-                let abs_file_path = data[0];
-                let line = data[1];
-                let at_char = data[2];
-
-                let path = format!("{abs_file_path}:{line}:{at_char}");
-                let _res = cmd_executor::exec_external_cmd(&path);
+                if let (Some(pth), Some(ln), Some(char)) = (data.get(0), data.get(1), data.get(2)) {
+                    let path = format!("{pth}:{ln}:{char}");
+                    let _res = cmd_executor::exec_external_cmd(path);
+                }
             }
         }
     }

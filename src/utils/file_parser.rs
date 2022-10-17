@@ -1,6 +1,6 @@
+use crate::cli::cli_model::App;
 use std::fs::File;
 use std::io::{self, prelude::*, BufReader};
-use crate::cli::cli_model::App;
 
 ///Read file line by line
 pub fn _parse_files() -> io::Result<()> {
@@ -24,8 +24,7 @@ pub fn _parse_files() -> io::Result<()> {
 }
 
 ///Parses docs into current app
-///TODO: RIGHT NOW THIS HARDCODES ALL FOUND POSITIONS TO LINE 45 ITEM
-pub fn parse_into_app(app :&mut App) -> io::Result<()> {
+pub fn parse_into_app(app: &mut App) -> io::Result<()> {
     let keyword: &str = "GQL.Candidate";
     let file = File::open("D:\\Me\\Git\\grepper\\TODOOOOOOOOO.txt")?;
 
@@ -36,16 +35,21 @@ pub fn parse_into_app(app :&mut App) -> io::Result<()> {
         line_number += 1;
 
         if let Some(position) = line?.to_lowercase().find(&keyword.to_lowercase()) {
-            // println!(
-            //     "Matched:: '{}' on char:: {:?} at line:: {}",
-            //     keyword, position, line_number
-            // );
             //push found line to results
-            app.items.push(vec!["D:\\Me\\Git\\grepper\\TODOOOOOOOOO.txt", "26","0"]);//lifetimes get in the way here
+            let p = String::from("D:\\Me\\Git\\grepper\\TODOOOOOOOOO.txt");
+            app.items
+                .push(vec![p, line_number.to_string(), position.to_string()]);
         }
     }
     Ok(())
 }
+/*lifetime docs
+    https://doc.rust-lang.org/stable/rust-by-example/scope/lifetime/fn.html
+    https://stackoverflow.com/questions/54488127/getting-temporary-value-dropped-while-borrowed-when-trying-to-update-an-option
+    https://stackoverflow.com/questions/54056268/temporary-value-is-freed-at-the-end-of-this-statement
+    https://stackoverflow.com/questions/59540064/insert-constructed-string-into-vec-in-rust
+    https://stackoverflow.com/questions/30154541/how-do-i-concatenate-strings
+*/
 
 //File Reader example :
 //https://stackoverflow.com/questions/45882329/read-large-files-line-by-line-in-rust
