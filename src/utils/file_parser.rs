@@ -1,6 +1,7 @@
 use crate::cli::cli_model::App;
-use std::fs::File;
 use std::io::{self, prelude::*, BufReader};
+use std::path::Path;
+use std::{fs, fs::File};
 
 ///Read file line by line
 pub fn _parse_files() -> io::Result<()> {
@@ -25,30 +26,64 @@ pub fn _parse_files() -> io::Result<()> {
 
 ///Parses docs into current app
 pub fn parse_into_app(app: &mut App) -> io::Result<()> {
-    let file = File::open("D:\\Me\\Git\\grepper\\TODOOOOOOOOO.txt")?;
+    //1st arg is always path
+    let args = std::env::args().collect::<Vec<String>>();
+    let path = &String::from(&args[1]);
 
-    let reader = BufReader::new(file);
-    let mut line_number = 0;
+    if let Ok(file) = File::open(path) {
+        let reader = BufReader::new(file);
+        let mut line_number = 0;
 
-    for line in reader.lines() {
-        line_number += 1;
+        for line in reader.lines() {
+            line_number += 1;
 
-        if let Some(position) = line?
-            .to_lowercase()
-            .find(&app.search.as_str().to_lowercase())
-        {
-            //push found line to results
-            let p = String::from("D:\\Me\\Git\\grepper\\TODOOOOOOOOO.txt");
-            app.items
-                .push(vec![p, line_number.to_string(), (position + 1).to_string()]);
-            //increment total hits
-            app.hits = app.hits + 1;
+            if let Some(position) = line?
+                .to_lowercase()
+                .find(&app.search.as_str().to_lowercase())
+            {
+                //push found line to results
+                app.items.push(vec![
+                    path.clone(),
+                    line_number.to_string(),
+                    (position + 1).to_string(),
+                ]);
+                //increment total hits
+                app.hits = app.hits + 1;
+            }
         }
     }
     //clean up inputs when ak hits are found
     app.search.clear();
     Ok(())
 }
+
+///see https://doc.rust-lang.org/std/fs/fn.read_dir.html
+/// call example
+///```
+///let _res = visit_dirs_recurs(Path::new("D:\\Me\\Git\\grepper\\src"))
+///```
+fn visit_dirs_recurs(dir: &Path) -> io::Result<()> {
+    if dir.is_dir() {
+        for entry in fs::read_dir(dir)? {
+            let path = entry?.path();
+            //recurse nested dirs
+            if path.is_dir() {
+                visit_dirs_recurs(&path)?;
+            } else if path.is_file() {
+                //TODO: IF FILE IS DETECTED SEARCH IT FOR KW
+                println!("{:?} >> is FILE!\n", &path);
+            }
+        }
+    }
+    Ok(())
+}
+///Gets extension from filename
+fn get_extension(filename: &str) -> Option<&str> {
+    Path::new(filename)
+        .extension()
+        .and_then(std::ffi::OsStr::to_str)
+}
+
 /*lifetime docs
     https://doc.rust-lang.org/stable/rust-by-example/scope/lifetime/fn.html
     https://stackoverflow.com/questions/54488127/getting-temporary-value-dropped-while-borrowed-when-trying-to-update-an-option

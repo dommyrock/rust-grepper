@@ -1,5 +1,5 @@
-mod utils;
 mod cli;
+mod utils;
 use crate::cli::composition;
 use std::error::Error;
 

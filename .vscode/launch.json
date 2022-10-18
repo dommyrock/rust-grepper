@@ -19,7 +19,7 @@
                "kind": "bin"
             }
          },
-         "args": ["path","-f"],
+         "args": ["C:\\Users\\dpolzer\\Downloads\\er\\mobile\\positionSearch\\FullSearchQuery_SkillRemoved.sql"],
          "cwd": "${workspaceFolder}"
       },
       {

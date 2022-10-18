@@ -42,6 +42,8 @@ pub fn exec_external_cmd(path: String) -> Result<(), Box<dyn std::error::Error>>
 */
 /*VS code CLI docs:
     https://code.visualstudio.com/docs/editor/command-line
+    TODO: "code --diff file1 file2"
+    https://www.digitalocean.com/community/tutorials/how-to-install-and-use-the-visual-studio-code-vs-code-command-line-interface
 
  Rust lib to execute external commands from current proccess
     https://doc.rust-lang.org/std/process/struct.Command.html
