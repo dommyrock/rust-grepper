@@ -60,10 +60,10 @@ fn run_app<B: Backend>(terminal: &mut Terminal<B>, mut app: App) -> io::Result<(
                     _ => {}
                 },
                 WidgetMode::Search => match key.code {
-                    // KeyCode::Enter => { v1
-                    //     app.items.push(app.input.drain(..).collect());
-                    // }
                     KeyCode::Enter => {
+                        //reset previous app state
+                        app.hits = 0;
+                        app.items = vec![];
                         let _res = file_parser::parse_into_app(&mut app);
                     }
                     KeyCode::Char(c) => {

@@ -9,9 +9,10 @@ pub enum WidgetMode {
 pub struct App<'a> {
     pub state: TableState,
     pub items: Vec<Vec<String>>,
+    pub hits: u32,
     pub view: WidgetMode,
     pub search: String,
-    pub not_used: Vec<Vec<&'a String>>,//to ssatisfy cotract
+    pub not_used: Vec<Vec<&'a String>>, //to ssatisfy cotract
 }
 
 impl<'a> App<'a> {
@@ -19,11 +20,13 @@ impl<'a> App<'a> {
         App {
             state: TableState::default(),
             items: itms,
+            hits: 0,
             search: String::new(),
             view: WidgetMode::Search,
             not_used: vec![],
         }
     }
+    ///Navigate to next row
     pub fn next(&mut self) {
         let i = match self.state.selected() {
             Some(i) => {
@@ -38,6 +41,7 @@ impl<'a> App<'a> {
         self.state.select(Some(i));
     }
 
+    ///Navigate to previous row
     pub fn previous(&mut self) {
         let i = match self.state.selected() {
             Some(i) => {

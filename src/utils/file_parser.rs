@@ -25,7 +25,6 @@ pub fn _parse_files() -> io::Result<()> {
 
 ///Parses docs into current app
 pub fn parse_into_app(app: &mut App) -> io::Result<()> {
-    let keyword: &str = "GQL.Candidate";
     let file = File::open("D:\\Me\\Git\\grepper\\TODOOOOOOOOO.txt")?;
 
     let reader = BufReader::new(file);
@@ -34,13 +33,20 @@ pub fn parse_into_app(app: &mut App) -> io::Result<()> {
     for line in reader.lines() {
         line_number += 1;
 
-        if let Some(position) = line?.to_lowercase().find(&keyword.to_lowercase()) {
+        if let Some(position) = line?
+            .to_lowercase()
+            .find(&app.search.as_str().to_lowercase())
+        {
             //push found line to results
             let p = String::from("D:\\Me\\Git\\grepper\\TODOOOOOOOOO.txt");
             app.items
-                .push(vec![p, line_number.to_string(), position.to_string()]);
+                .push(vec![p, line_number.to_string(), (position + 1).to_string()]);
+            //increment total hits
+            app.hits = app.hits + 1;
         }
     }
+    //clean up inputs when ak hits are found
+    app.search.clear();
     Ok(())
 }
 /*lifetime docs
