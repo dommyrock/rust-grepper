@@ -39,8 +39,6 @@ pub fn parse_into_app(app: &mut App) -> io::Result<()> {
         let _rs = run_search(path, app);
     }
 
-    //Clean up inputs
-    app.search.clear();
     Ok(())
 }
 

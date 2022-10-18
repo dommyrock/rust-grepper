@@ -66,6 +66,10 @@ fn run_app<B: Backend>(terminal: &mut Terminal<B>, mut app: App) -> io::Result<(
                         app.items = vec![];
                         let _res = file_parser::parse_into_app(&mut app);
                     }
+                    KeyCode::Delete => {
+                        //Clean up inputs
+                        app.search.clear();
+                    }
                     KeyCode::Char(c) => {
                         app.search.push(c);
                     }
