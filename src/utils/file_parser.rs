@@ -30,6 +30,22 @@ pub fn parse_into_app(app: &mut App) -> io::Result<()> {
     let args = std::env::args().collect::<Vec<String>>();
     let path = &String::from(&args[1]);
 
+    let should_recurse = if args.len() > 2 { true } else { false };
+    if should_recurse {
+        //Recurse directory search
+        let _ = visit_dirs_recurs(Path::new(path), app);
+    } else {
+        //Search
+        let _rs = run_search(path, app);
+    }
+
+    //Clean up inputs
+    app.search.clear();
+    Ok(())
+}
+
+///Execute search on specified file path and update App state
+fn run_search(path: &String, app: &mut App) -> io::Result<()> {
     if let Ok(file) = File::open(path) {
         let reader = BufReader::new(file);
         let mut line_number = 0;
@@ -52,8 +68,6 @@ pub fn parse_into_app(app: &mut App) -> io::Result<()> {
             }
         }
     }
-    //clean up inputs when ak hits are found
-    app.search.clear();
     Ok(())
 }
 
@@ -62,23 +76,24 @@ pub fn parse_into_app(app: &mut App) -> io::Result<()> {
 ///```
 ///let _res = visit_dirs_recurs(Path::new("D:\\Me\\Git\\grepper\\src"))
 ///```
-fn visit_dirs_recurs(dir: &Path) -> io::Result<()> {
+fn visit_dirs_recurs(dir: &Path, app: &mut App) -> io::Result<()> {
     if dir.is_dir() {
         for entry in fs::read_dir(dir)? {
             let path = entry?.path();
             //recurse nested dirs
             if path.is_dir() {
-                visit_dirs_recurs(&path)?;
+                visit_dirs_recurs(&path, app)?;
             } else if path.is_file() {
-                //TODO: IF FILE IS DETECTED SEARCH IT FOR KW
-                println!("{:?} >> is FILE!\n", &path);
+                // println!("{:?} >> is FILE!\n", &path);
+                let _search = run_search(&path.into_os_string().into_string().unwrap(), app);
             }
         }
     }
     Ok(())
 }
+
 ///Gets extension from filename
-fn get_extension(filename: &str) -> Option<&str> {
+fn _get_extension(filename: &str) -> Option<&str> {
     Path::new(filename)
         .extension()
         .and_then(std::ffi::OsStr::to_str)
