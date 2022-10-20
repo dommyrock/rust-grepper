@@ -31,7 +31,7 @@ pub fn parse_into_app(app: &mut App) -> io::Result<()> {
     let path = &String::from(&args[1]);
 
     let should_recurse = if args.len() > 2 { true } else { false };
-    if should_recurse {
+    if should_recurse && args[2] == "-r" {
         //Recurse directory search
         let _ = visit_dirs_recurs(Path::new(path), app);
     } else {
